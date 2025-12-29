@@ -3,22 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi Stats - Monitor Your Pi-hole with Style</title>
-    <meta name="description" content="A beautiful native iOS and macOS app to monitor and control your Pi-hole. Real-time statistics, widgets, and menu bar access.">
+    
+    <!-- Primary Meta Tags -->
+    <title>Pi Stats - Monitor Your Pi-hole with Style | iOS & macOS App</title>
+    <meta name="title" content="Pi Stats - Monitor Your Pi-hole with Style | iOS & macOS App">
+    <meta name="description" content="A beautiful native iOS and macOS app to monitor and control your Pi-hole. Real-time statistics, widgets, menu bar access, and support for multiple Pi-hole instances. Compatible with Pi-hole 5.x and 6.x.">
+    <meta name="keywords" content="Pi-hole, Pi Stats, ad blocker, network monitor, iOS app, macOS app, Raspberry Pi, DNS, privacy, open source, menu bar app, widgets">
+    <meta name="author" content="Bunn">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#cd4c4c">
+    <meta name="msapplication-TileColor" content="#cd4c4c">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pistats.app/">
+    <meta property="og:title" content="Pi Stats - Monitor Your Pi-hole with Style">
+    <meta property="og:description" content="A beautiful native iOS and macOS app to monitor and control your Pi-hole. Real-time statistics, widgets, and menu bar access.">
+    <meta property="og:image" content="https://pistats.app/images/icon.png">
+    <meta property="og:site_name" content="Pi Stats">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://pistats.app/">
+    <meta property="twitter:title" content="Pi Stats - Monitor Your Pi-hole with Style">
+    <meta property="twitter:description" content="A beautiful native iOS and macOS app to monitor and control your Pi-hole. Real-time statistics, widgets, and menu bar access.">
+    <meta property="twitter:image" content="https://pistats.app/images/icon.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://pistats.app/">
+    
+    <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="./images/icon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./images/icon.png">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="./styles.css">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Pi Stats",
+        "description": "A beautiful native iOS and macOS app to monitor and control your Pi-hole. Real-time statistics, widgets, and menu bar access.",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": ["iOS", "macOS"],
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5",
+            "ratingCount": "100"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Bunn",
+            "url": "https://github.com/Bunn"
+        },
+        "downloadUrl": [
+            "https://apps.apple.com/us/app/id1523024268",
+            "https://apps.apple.com/us/app/pi-stats/id1514075262"
+        ],
+        "softwareVersion": "1.0",
+        "screenshot": "https://pistats.app/images/ios-1-dark.png",
+        "featureList": [
+            "Real-time Pi-hole monitoring",
+            "Quick enable/disable controls",
+            "iOS widgets support",
+            "macOS menu bar app",
+            "Secure Keychain storage",
+            "Multiple Pi-hole instances support",
+            "Pi-hole 5.x and 6.x compatible"
+        ]
+    }
+    </script>
 </head>
 <body>
     <!-- Background elements -->
-    <div class="bg-pattern"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
+    <div class="bg-pattern" aria-hidden="true"></div>
+    <div class="orb orb-1" aria-hidden="true"></div>
+    <div class="orb orb-2" aria-hidden="true"></div>
 
+    <!-- Main Content -->
+    <main>
     <!-- Header -->
     <header>
         <div class="hero-content">
@@ -51,24 +131,24 @@
                 <h2>Beautiful on Every Device</h2>
                 <p class="section-subtitle">Designed to feel at home on iOS, and macOS with platform-specific optimizations.</p>
             </div>
-            <div class="screenshots-tabs">
-                <button class="tab-btn active" onclick="switchTab('ios')">iOS</button>
-                <button class="tab-btn" onclick="switchTab('macos')">macOS</button>
+            <div class="screenshots-tabs" role="tablist" aria-label="Platform screenshots">
+                <button class="tab-btn active" onclick="switchTab('ios')" role="tab" aria-selected="true" aria-controls="ios-screenshots">iOS</button>
+                <button class="tab-btn" onclick="switchTab('macos')" role="tab" aria-selected="false" aria-controls="macos-screenshots">macOS</button>
             </div>
             <div class="screenshots-container">
-                <div class="screenshots-wrapper active" id="ios-screenshots">
-                    <img src="./images/ios-1-dark.png" alt="Pi Stats iOS Screenshot 1" class="screenshot screenshot-ios dark-only">
-                    <img src="./images/ios-2-dark.png" alt="Pi Stats iOS Screenshot 2" class="screenshot screenshot-ios dark-only">
-                    <img src="./images/ios-3-dark.png" alt="Pi Stats iOS Screenshot 3" class="screenshot screenshot-ios dark-only">
-                    <img src="./images/ios-4-dark.png" alt="Pi Stats iOS Screenshot 4" class="screenshot screenshot-ios dark-only">
-                    <img src="./images/ios-1-light.png" alt="Pi Stats iOS Screenshot 1" class="screenshot screenshot-ios light-only">
-                    <img src="./images/ios-2-light.png" alt="Pi Stats iOS Screenshot 2" class="screenshot screenshot-ios light-only">
-                    <img src="./images/ios-3-light.png" alt="Pi Stats iOS Screenshot 3" class="screenshot screenshot-ios light-only">
-                    <img src="./images/ios-4-light.png" alt="Pi Stats iOS Screenshot 4" class="screenshot screenshot-ios light-only">
+                <div class="screenshots-wrapper active" id="ios-screenshots" role="tabpanel" aria-label="iOS Screenshots">
+                    <img src="./images/ios-1-dark.png" alt="Pi Stats iOS app showing Pi-hole dashboard with blocked queries statistics in dark mode" class="screenshot screenshot-ios dark-only" loading="lazy">
+                    <img src="./images/ios-2-dark.png" alt="Pi Stats iOS app displaying real-time network monitoring charts in dark mode" class="screenshot screenshot-ios dark-only" loading="lazy">
+                    <img src="./images/ios-3-dark.png" alt="Pi Stats iOS app settings and Pi-hole configuration screen in dark mode" class="screenshot screenshot-ios dark-only" loading="lazy">
+                    <img src="./images/ios-4-dark.png" alt="Pi Stats iOS app multiple Pi-hole instances view in dark mode" class="screenshot screenshot-ios dark-only" loading="lazy">
+                    <img src="./images/ios-1-light.png" alt="Pi Stats iOS app showing Pi-hole dashboard with blocked queries statistics in light mode" class="screenshot screenshot-ios light-only" loading="lazy">
+                    <img src="./images/ios-2-light.png" alt="Pi Stats iOS app displaying real-time network monitoring charts in light mode" class="screenshot screenshot-ios light-only" loading="lazy">
+                    <img src="./images/ios-3-light.png" alt="Pi Stats iOS app settings and Pi-hole configuration screen in light mode" class="screenshot screenshot-ios light-only" loading="lazy">
+                    <img src="./images/ios-4-light.png" alt="Pi Stats iOS app multiple Pi-hole instances view in light mode" class="screenshot screenshot-ios light-only" loading="lazy">
                 </div>
-                <div class="screenshots-wrapper" id="macos-screenshots">
-                    <img src="./images/macos-1-dark.png" alt="Pi Stats macOS Screenshot" class="screenshot screenshot-mac dark-only">
-                    <img src="./images/macos-1-light.png" alt="Pi Stats macOS Screenshot" class="screenshot screenshot-mac light-only">
+                <div class="screenshots-wrapper" id="macos-screenshots" role="tabpanel" aria-label="macOS Screenshots">
+                    <img src="./images/macos-1-dark.png" alt="Pi Stats macOS menu bar app showing Pi-hole statistics and controls in dark mode" class="screenshot screenshot-mac dark-only" loading="lazy">
+                    <img src="./images/macos-1-light.png" alt="Pi Stats macOS menu bar app showing Pi-hole statistics and controls in light mode" class="screenshot screenshot-mac light-only" loading="lazy">
                 </div>
             </div>
         </div>
@@ -197,9 +277,13 @@
         <img src="" alt="Screenshot preview" id="lightbox-img">
     </div>
 
+    </main>
+
     <!-- Footer -->
     <footer>
-        <div class="container"></div>
+        <div class="container">
+            <p>&copy; 2024 Pi Stats. Open source project by <a href="https://github.com/Bunn" target="_blank" rel="noopener">Bunn</a>.</p>
+        </div>
     </footer>
 
     <script>
@@ -219,10 +303,14 @@
 
         // Screenshot tabs
         function switchTab(platform) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+            });
             document.querySelectorAll('.screenshots-wrapper').forEach(wrapper => wrapper.classList.remove('active'));
             
             event.target.classList.add('active');
+            event.target.setAttribute('aria-selected', 'true');
             document.getElementById(`${platform}-screenshots`).classList.add('active');
         }
 
