@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Stats - Monitor Your Pi-hole with Style</title>
+    <meta name="description" content="A beautiful native iOS and macOS app to monitor and control your Pi-hole. Real-time statistics, widgets, and menu bar access.">
+    <link rel="icon" type="image/png" href="./images/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #cd4c4c;
+            --primary-light: #e85d5d;
+            --primary-dark: #a83c3c;
+            --accent: #ff6b6b;
+            --bg-dark: #0d0d0f;
+            --bg-dark-secondary: #16161a;
+            --bg-dark-tertiary: #1e1e24;
+            --text-dark: #ffffff;
+            --text-dark-muted: #a0a0a8;
+            --bg-light: #fafafa;
+            --bg-light-secondary: #ffffff;
+            --bg-light-tertiary: #f0f0f2;
+            --text-light: #1a1a1f;
+            --text-light-muted: #6b6b75;
+            --gradient-dark: linear-gradient(135deg, #0d0d0f 0%, #1a1a22 50%, #0d0d0f 100%);
+            --gradient-light: linear-gradient(135deg, #ffffff 0%, #f8f8fa 50%, #ffffff 100%);
+            --card-shadow-dark: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --card-shadow-light: 0 4px 24px rgba(0, 0, 0, 0.08);
+            --glow: 0 0 60px rgba(205, 76, 76, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gradient-dark);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        body.light-mode {
+            background: var(--gradient-light);
+            color: var(--text-light);
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 25% 25%, var(--primary) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, var(--primary) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        body.light-mode .bg-pattern {
+            opacity: 0.05;
+        }
+
+        /* Floating orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            opacity: 0.08;
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent);
+            opacity: 0.05;
+            bottom: 10%;
+            left: -100px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        body.light-mode .orb-1 {
+            opacity: 0.12;
+        }
+
+        body.light-mode .orb-2 {
+            opacity: 0.08;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            background: var(--bg-dark-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+        }
+
+        body.light-mode .theme-toggle {
+            background: var(--bg-light-secondary);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow-light);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+
+        .theme-toggle svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-dark);
+            transition: fill 0.3s ease;
+        }
+
+        body.light-mode .theme-toggle svg {
+            fill: var(--text-light);
+        }
+
+        .theme-toggle .sun { display: none; }
+        .theme-toggle .moon { display: block; }
+
+        body.light-mode .theme-toggle .sun { display: block; }
+        body.light-mode .theme-toggle .moon { display: none; }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 24px;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .app-icon {
+            width: 140px;
+            height: 140px;
+            border-radius: 32px;
+            margin-bottom: 32px;
+            box-shadow: var(--glow), var(--card-shadow-dark);
+            animation: iconPulse 4s ease-in-out infinite;
+        }
+
+        body.light-mode .app-icon {
+            box-shadow: var(--glow), var(--card-shadow-light);
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(205, 76, 76, 0.15);
+            border: 1px solid rgba(205, 76, 76, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(3rem, 10vw, 5rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+
+        h1 span {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 3vw, 1.35rem);
+            color: var(--text-dark-muted);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            font-weight: 400;
+            animation: fadeInUp 0.6s ease 0.3s both;
+        }
+
+        body.light-mode .hero-subtitle {
+            color: var(--text-light-muted);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Platform badges */
+        .platforms {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 48px;
+            animation: fadeInUp 0.6s ease 0.4s both;
+        }
+
+        .platform-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-dark-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .platform-badge {
+            background: var(--bg-light-secondary);
+            border-color: rgba(0, 0, 0, 0.06);
+            box-shadow: var(--card-shadow-light);
+        }
+
+        .platform-badge svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* CTA Buttons */
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.6s ease 0.5s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 28px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(205, 76, 76, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(205, 76, 76, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-dark-tertiary);
+            color: var(--text-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.light-mode .btn-secondary {
+            background: var(--bg-light-secondary);
+            color: var(--text-light);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: var(--card-shadow-light);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dark-muted);
+            font-size: 0.8rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        body.light-mode .scroll-indicator {
+            color: var(--text-light-muted);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        .scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Sections */
+        section {
+            padding: 120px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-dark-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        body.light-mode .section-subtitle {
+            color: var(--text-light-muted);
+        }
+
+        /* Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-dark-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-mode .feature-card {
+            background: var(--bg-light-secondary);
+            border-color: rgba(0, 0, 0, 0.06);
+            box-shadow: var(--card-shadow-light);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(205, 76, 76, 0.3);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(205, 76, 76, 0.12);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: var(--primary-light);
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-dark-muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        body.light-mode .feature-card p {
+            color: var(--text-light-muted);
+        }
+
+        /* Screenshots */
+        .screenshots-section {
+            overflow: hidden;
+        }
+
+        .screenshots-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-dark-tertiary);
+            color: var(--text-dark-muted);
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .tab-btn {
+            background: var(--bg-light-secondary);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: var(--text-light-muted);
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .screenshots-container {
+            position: relative;
+        }
+
+        .screenshots-wrapper {
+            display: none;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .screenshots-wrapper.active {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .screenshot {
+            border-radius: 24px;
+            box-shadow: var(--card-shadow-dark);
+            transition: transform 0.4s ease;
+            background: var(--bg-dark-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        body.light-mode .screenshot {
+            box-shadow: var(--card-shadow-light);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .screenshot:hover {
+            transform: scale(1.02);
+        }
+
+        .screenshot-ios {
+            width: 220px;
+            height: auto;
+        }
+
+        .screenshot-mac {
+            max-width: 100%;
+            width: 600px;
+            height: auto;
+        }
+
+        /* Download Section */
+        .download-section {
+            background: var(--bg-dark-secondary);
+            border-radius: 32px;
+            padding: 80px 40px;
+            margin: 0 24px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-mode .download-section {
+            background: var(--bg-light-secondary);
+            border-color: rgba(0, 0, 0, 0.06);
+            box-shadow: var(--card-shadow-light);
+        }
+
+        .download-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top right, rgba(205, 76, 76, 0.1), transparent 60%);
+            pointer-events: none;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .download-card {
+            background: var(--bg-dark-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+        }
+
+        body.light-mode .download-card {
+            background: var(--bg-light-tertiary);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .download-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .download-card h3 svg {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        .download-card .requirements {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-dark-muted);
+            margin-bottom: 24px;
+            padding: 8px 16px;
+            background: rgba(205, 76, 76, 0.1);
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        body.light-mode .download-card .requirements {
+            color: var(--text-light-muted);
+        }
+
+        .download-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .download-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .download-link.app-store {
+            background: linear-gradient(135deg, #007AFF, #5856D6);
+            color: white;
+        }
+
+        .download-link.app-store:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3);
+        }
+
+        .download-link.gumroad {
+            background: var(--bg-dark-secondary);
+            color: var(--text-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.light-mode .download-link.gumroad {
+            background: var(--bg-light-secondary);
+            color: var(--text-light);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .download-link.gumroad:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .download-link svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Pi Monitor Section */
+        .pi-monitor-section {
+            text-align: center;
+        }
+
+        .pi-monitor-card {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--bg-dark-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 48px;
+        }
+
+        body.light-mode .pi-monitor-card {
+            background: var(--bg-light-secondary);
+            border-color: rgba(0, 0, 0, 0.06);
+            box-shadow: var(--card-shadow-light);
+        }
+
+        .pi-monitor-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        .pi-monitor-card p {
+            color: var(--text-dark-muted);
+            margin-bottom: 24px;
+        }
+
+        body.light-mode .pi-monitor-card p {
+            color: var(--text-light-muted);
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .github-link:hover {
+            color: var(--accent);
+        }
+
+        .github-link svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Compatibility Badge */
+        .compatibility {
+            display: flex;
+            justify-content: center;
+            margin-top: 48px;
+        }
+
+        .compat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(205, 76, 76, 0.1);
+            border: 1px solid rgba(205, 76, 76, 0.2);
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+        }
+
+        .compat-badge strong {
+            color: var(--primary-light);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-dark-muted);
+            font-size: 0.9rem;
+        }
+
+        body.light-mode footer {
+            color: var(--text-light-muted);
+        }
+
+        footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .footer-links a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .footer-links svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            header {
+                padding: 60px 24px;
+                min-height: auto;
+                padding-top: 120px;
+                padding-bottom: 100px;
+            }
+
+            .app-icon {
+                width: 110px;
+                height: 110px;
+                border-radius: 26px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+                padding: 0 20px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            section {
+                padding: 80px 0;
+            }
+
+            .download-section {
+                margin: 0 16px;
+                padding: 48px 24px;
+                border-radius: 24px;
+            }
+
+            .screenshot-ios {
+                width: 180px;
+            }
+
+            .screenshot-mac {
+                width: 100%;
+            }
+
+            .pi-monitor-card {
+                padding: 32px 24px;
+            }
+
+            .theme-toggle {
+                top: 16px;
+                right: 16px;
+            }
+
+            .scroll-indicator {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .platforms {
+                flex-direction: column;
+            }
+
+            .screenshots-tabs {
+                flex-wrap: wrap;
+            }
+
+            .feature-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background elements -->
+    <div class="bg-pattern"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+
+    <!-- Header -->
+    <header>
+        <div class="hero-content">
+            <img src="./images/icon.png" alt="Pi Stats Icon" class="app-icon">
+            <div class="hero-badge">Open Source & Free</div>
+            <h1>Monitor Your Pi-hole<br><span>With Style</span></h1>
+            <p class="hero-subtitle">
+                A beautiful native iOS and macOS app to visualize and control your Pi-hole. 
+                Real-time statistics, widgets, and menu bar access for your network-wide ad blocking.
+            </p>
+            <div class="platforms">
+                <div class="platform-badge">
+                    <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                    iOS & macOS
+                </div>
+                <div class="platform-badge">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    Pi-hole 5.x & 6.x
+                </div>
+            </div>
+            <div class="cta-buttons">
+                <a href="https://apps.apple.com/us/app/id1523024268" class="btn btn-primary" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                    Download for iOS
+                </a>
+                <a href="https://apps.apple.com/us/app/pi-stats/id1514075262?ls=1" class="btn btn-secondary" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M4 16v4h4l11-11-4-4L4 16zm15.71-9.71a1 1 0 0 0 0-1.41l-2.59-2.59a1 1 0 0 0-1.41 0L14 4l4 4 1.71-1.71z"/></svg>
+                    Download for macOS
+                </a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll to explore</span>
+            <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful Features</h2>
+                <p class="section-subtitle">Everything you need to monitor and control your Pi-hole, beautifully designed for Apple platforms.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
+                    <h3>Real-time Monitoring</h3>
+                    <p>Watch your Pi-hole statistics update live with beautiful charts and metrics that give you instant insights.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.47 1.28-4.64 3.22-5.89L6.8 4.69A8.98 8.98 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+                    </div>
+                    <h3>Quick Enable/Disable</h3>
+                    <p>Toggle your Pi-hole protection on and off with a single tap. Perfect for temporary access to blocked content.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+                    </div>
+                    <h3>iOS Widgets</h3>
+                    <p>Add widgets to your home screen for at-a-glance statistics. See blocked queries and protection status instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    </div>
+                    <h3>Menu Bar App</h3>
+                    <p>Access Pi Stats directly from your Mac menu bar. Quick, convenient, and always just a click away.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                    </div>
+                    <h3>Secure Storage</h3>
+                    <p>Your credentials are safely stored in the system Keychain. Your authentication tokens never leave your device.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                    </div>
+                    <h3>Multiple Pi-holes</h3>
+                    <p>Monitor multiple Pi-hole instances from a single app. Perfect for complex network setups and redundancy.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="screenshots-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Beautiful on Every Device</h2>
+                <p class="section-subtitle">Designed to feel native on iOS, iPadOS, and macOS with platform-specific optimizations.</p>
+            </div>
+            <div class="screenshots-tabs">
+                <button class="tab-btn active" onclick="switchTab('ios')">iOS</button>
+                <button class="tab-btn" onclick="switchTab('macos')">macOS</button>
+            </div>
+            <div class="screenshots-container">
+                <div class="screenshots-wrapper active" id="ios-screenshots">
+                    <img src="./images/screenshot-ios-1.png" alt="Pi Stats iOS Screenshot 1" class="screenshot screenshot-ios">
+                    <img src="./images/screenshot-ios-2.png" alt="Pi Stats iOS Screenshot 2" class="screenshot screenshot-ios">
+                    <img src="./images/screenshot-ios-3.png" alt="Pi Stats iOS Screenshot 3" class="screenshot screenshot-ios">
+                </div>
+                <div class="screenshots-wrapper" id="macos-screenshots">
+                    <img src="./images/screenshot-mac-1.png" alt="Pi Stats macOS Screenshot" class="screenshot screenshot-mac">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pi Monitor Section -->
+    <section class="pi-monitor-section">
+        <div class="container">
+            <div class="pi-monitor-card">
+                <h3>Enhanced with Pi Monitor</h3>
+                <p>For optional monitoring of your Raspberry Pi, install Pi Monitor for enhanced performance insights and real-time statistics about your Pi's CPU, memory, and temperature.</p>
+                <a href="https://github.com/Bunn/pi_monitor" class="github-link" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+                    View Pi Monitor on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section>
+        <div class="download-section">
+            <div class="section-header">
+                <h2>Get Pi Stats</h2>
+                <p class="section-subtitle">Free and open source. Download from the App Store or support the project on Gumroad.</p>
+            </div>
+            <div class="download-grid">
+                <div class="download-card">
+                    <h3>
+                        <svg viewBox="0 0 24 24"><path d="M15.5 1h-8A2.5 2.5 0 0 0 5 3.5v17A2.5 2.5 0 0 0 7.5 23h8a2.5 2.5 0 0 0 2.5-2.5v-17A2.5 2.5 0 0 0 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/></svg>
+                        iOS
+                    </h3>
+                    <div class="requirements">iOS 26.0+</div>
+                    <div class="download-links">
+                        <a href="https://apps.apple.com/us/app/id1523024268" class="download-link app-store" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                            App Store
+                        </a>
+                    </div>
+                </div>
+                <div class="download-card">
+                    <h3>
+                        <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2v12h16V6H4zm2 2h12v8H6V8z"/></svg>
+                        macOS
+                    </h3>
+                    <div class="requirements">macOS 15.2+</div>
+                    <div class="download-links">
+                        <a href="https://apps.apple.com/us/app/pi-stats/id1514075262?ls=1" class="download-link app-store" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                            Mac App Store
+                        </a>
+                        <a href="https://gum.co/iqhwv" class="download-link gumroad" target="_blank" rel="noopener">
+                            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            Gumroad (Pay what you want)
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="compatibility">
+                <div class="compat-badge">
+                    <strong>Tested with</strong> Pi-hole 5.x and 6.x versions
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/Bunn/SwiftHole" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+                    SwiftHole Library
+                </a>
+                <a href="https://github.com/Bunn/pi_monitor" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+                    Pi Monitor
+                </a>
+            </div>
+            <p>Made with ❤️ by <a href="https://github.com/Bunn" target="_blank" rel="noopener">Bunn</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        }
+
+        // Load saved theme or detect system preference
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            } else if (savedTheme === 'dark') {
+                document.body.classList.remove('light-mode');
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                document.body.classList.add('light-mode');
+            }
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                document.body.classList.toggle('light-mode', e.matches);
+            }
+        });
+
+        loadTheme();
+
+        // Screenshot tabs
+        function switchTab(platform) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.screenshots-wrapper').forEach(wrapper => wrapper.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${platform}-screenshots`).classList.add('active');
+        }
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .download-card, .pi-monitor-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
+
