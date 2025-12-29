@@ -479,6 +479,23 @@
             cursor: pointer;
         }
 
+        /* Theme-specific screenshots */
+        .dark-only {
+            display: block;
+        }
+
+        .light-only {
+            display: none;
+        }
+
+        body.light-mode .dark-only {
+            display: none;
+        }
+
+        body.light-mode .light-only {
+            display: block;
+        }
+
         /* Lightbox */
         .lightbox {
             position: fixed;
@@ -910,12 +927,18 @@
             </div>
             <div class="screenshots-container">
                 <div class="screenshots-wrapper active" id="ios-screenshots">
-                    <img src="./images/screenshot-ios-1.png" alt="Pi Stats iOS Screenshot 1" class="screenshot screenshot-ios">
-                    <img src="./images/screenshot-ios-2.png" alt="Pi Stats iOS Screenshot 2" class="screenshot screenshot-ios">
-                    <img src="./images/screenshot-ios-3.png" alt="Pi Stats iOS Screenshot 3" class="screenshot screenshot-ios">
+                    <img src="./images/ios-1-dark.png" alt="Pi Stats iOS Screenshot 1" class="screenshot screenshot-ios dark-only">
+                    <img src="./images/ios-2-dark.png" alt="Pi Stats iOS Screenshot 2" class="screenshot screenshot-ios dark-only">
+                    <img src="./images/ios-3-dark.png" alt="Pi Stats iOS Screenshot 3" class="screenshot screenshot-ios dark-only">
+                    <img src="./images/ios-4-dark.png" alt="Pi Stats iOS Screenshot 4" class="screenshot screenshot-ios dark-only">
+                    <img src="./images/ios-1-light.png" alt="Pi Stats iOS Screenshot 1" class="screenshot screenshot-ios light-only">
+                    <img src="./images/ios-2-light.png" alt="Pi Stats iOS Screenshot 2" class="screenshot screenshot-ios light-only">
+                    <img src="./images/ios-3-light.png" alt="Pi Stats iOS Screenshot 3" class="screenshot screenshot-ios light-only">
+                    <img src="./images/ios-4-light.png" alt="Pi Stats iOS Screenshot 4" class="screenshot screenshot-ios light-only">
                 </div>
                 <div class="screenshots-wrapper" id="macos-screenshots">
-                    <img src="./images/screenshot-mac-1.png" alt="Pi Stats macOS Screenshot" class="screenshot screenshot-mac">
+                    <img src="./images/macos-1-dark.png" alt="Pi Stats macOS Screenshot" class="screenshot screenshot-mac dark-only">
+                    <img src="./images/macos-1-light.png" alt="Pi Stats macOS Screenshot" class="screenshot screenshot-mac light-only">
                 </div>
             </div>
         </div>
