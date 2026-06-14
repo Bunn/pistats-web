@@ -379,6 +379,20 @@ body.light-mode .feature-card {
     margin-bottom: 12px;
 }
 
+.feature-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--primary-light);
+    background: rgba(205, 76, 76, 0.12);
+    border: 1px solid rgba(205, 76, 76, 0.25);
+    border-radius: 999px;
+    vertical-align: middle;
+}
+
 .feature-card p {
     color: var(--text-dark-muted);
     font-size: 0.95rem;
